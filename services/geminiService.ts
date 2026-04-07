@@ -1,9 +1,8 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
-import { TargetingRequest, TargetingResult, Tier } from "../types";
+import { TargetingRequest, TargetingResult } from "../types";
 
 const SYSTEM_INSTRUCTION = `You are Pavilion Targeter, a world-class sponsorship targeting assistant.
-Your role is to identify and prioritize potential brand sponsors for a given property.
+Your role is to identify and prioritize potential REAL brand sponsors for a given property.
 
 EVALUATION FRAMEWORK:
 - Audience match: Does the brand’s target customer align with this audience?
@@ -22,35 +21,95 @@ OUTPUT RULES:
 - Prioritize category diversity.
 - Avoid listing direct competitors within the same tier.
 - Use executive, practical, and clear tone. No hype or sales language.
-- Brand names must be plausible but illustrative/fictional (e.g., "Peak Performance Apparel" instead of "Nike").
-- Frame all suggestions as demo examples.
+- Use REAL companies, not fictional placeholders.
+- Prefer companies that are plausible sponsorship targets for the property, geography, audience, and goal provided.
+- If a detail cannot be verified with reasonable confidence, return "N/A".
+- Accuracy is more important than completeness.
+
+STRICT CONTACT AND SOURCE RULES:
+- DO NOT fabricate or guess any phone numbers, email addresses, LinkedIn URLs, names, titles, or sources.
+- DO NOT use placeholder data such as:
+  - 555 phone numbers
+  - fake domains
+  - invented emails
+  - invented people
+  - invented LinkedIn URLs
+- If a direct person cannot be confidently identified, use an executive-style fallback such as:
+  - "Partnerships Team"
+  - "Corporate Communications"
+  - "Community Relations"
+  - "Marketing Leadership"
+- If a direct person cannot be found, the decision-maker title should still be realistic, such as:
+  - "Director of Partnerships"
+  - "VP of Marketing"
+  - "Director of Community Relations"
+  - "Corporate Sponsorship Lead"
+- Phone must be a COMPANY MAIN LINE or OFFICE NUMBER only, never a guessed direct number.
+- Email must only be returned if publicly listed and verifiable.
+- LinkedIn must be a real LinkedIn URL if available. Prefer the person’s LinkedIn profile. If not available, provide the company LinkedIn page. If neither can be verified, return "N/A".
+- Source must describe the real source or sources used, such as:
+  - "Company website - About page"
+  - "Company website - Contact page"
+  - "Press release"
+  - "News article"
+  - "LinkedIn - Company page"
+  - "LinkedIn - Executive profile"
+  - "Community impact report"
+  - "Investor relations page"
+  - "Apollo"
+- If multiple sources support the entry, combine them in one concise source string separated by " / ".
 
 Each sponsor entry must include:
 - Brand Name
 - Industry Category
 - One-sentence rationale (Why it fits)
-- Likely decision-maker title (Contact Lead)
+- Likely decision-maker title
 - Tier
 - List of specific Fit Factors identified
-- Website (plausible URL)
-- Contact Lead Name and Title (e.g., "Sarah Johnson, Director of Partnerships")
-- Contact Clue (best available contact clue, e.g., "VP of Partnerships mentioned in press release" or "Media contact: press@company.com")
-- Email (if publicly available, e.g., "partnerships@brand.com")
-- Phone (if available, e.g., "+1-555-0123")
-- Source (e.g., "Press release / About page / News / LinkedIn")`;
+- Website
+- Contact Lead Name and Title
+- Contact Clue
+- Email
+- Company Main Line
+- LinkedIn URL
+- Source
+
+FIELD RULES:
+- brandName: real company name
+- industryCategory: specific business category
+- rationale: one sentence, strategic and concrete
+- decisionMakerTitle: likely role responsible for sponsorships, partnerships, community, or marketing
+- tier: must be exactly "Tier 1" or "Tier 2"
+- fitFactors: concise list of actual fit reasons
+- website: official company website URL if known, otherwise "N/A"
+- contactLead: real name and title if verifiable; otherwise an executive-style team or function such as "Partnerships Team"
+- contactClue: brief explanation of how this contact path was identified, or "N/A"
+- email: public verified email only, otherwise "N/A"
+- phone: company main line or office number only, otherwise "N/A"
+- linkedinUrl: real LinkedIn profile or company page URL if verifiable, otherwise "N/A"
+- source: concise list of real sources used, otherwise "N/A"`;
 
 export async function generateSponsorshipStrategy(request: TargetingRequest): Promise<TargetingResult> {
   const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-  
+
   const response = await ai.models.generateContent({
-    model: 'gemini-3-flash-preview',
+    model: "gemini-3-flash-preview",
     contents: [
       {
-        text: `Target sponsors for the following:
-        Property: ${request.property}
-        Geography: ${request.geography}
-        Audience Profile: ${request.audienceProfile}
-        Sponsorship Goal: ${request.sponsorshipGoal}`
+        text: `Target real sponsors for the following property and return only verifiable research-based results.
+
+Property: ${request.property}
+Geography: ${request.geography}
+Audience Profile: ${request.audienceProfile}
+Sponsorship Goal: ${request.sponsorshipGoal}
+
+Important:
+- Use real brands only.
+- No fictional demo companies.
+- No invented contact data.
+- Return "N/A" for any unverifiable detail.
+- Include LinkedIn and source data wherever possible.
+- Phone must be a company main line or office number only.`
       }
     ],
     config: {
@@ -61,7 +120,7 @@ export async function generateSponsorshipStrategy(request: TargetingRequest): Pr
         properties: {
           strategyHeadline: {
             type: Type.STRING,
-            description: "A short, bold, executive headline summarizing the strategy (e.g., 'Local, family-focused brand partnerships prioritized for community engagement.')"
+            description: "A short executive headline summarizing the overall sponsorship targeting strategy."
           },
           executiveSummary: {
             type: Type.STRING,
@@ -72,26 +131,75 @@ export async function generateSponsorshipStrategy(request: TargetingRequest): Pr
             items: {
               type: Type.OBJECT,
               properties: {
-                brandName: { type: Type.STRING },
-                industryCategory: { type: Type.STRING },
-                rationale: { type: Type.STRING },
-                decisionMakerTitle: { type: Type.STRING },
-                tier: { 
-                    type: Type.STRING,
-                    description: "Tier 1 or Tier 2 based on evaluation logic."
+                brandName: {
+                  type: Type.STRING,
+                  description: "Real company name."
+                },
+                industryCategory: {
+                  type: Type.STRING,
+                  description: "Specific industry or business category."
+                },
+                rationale: {
+                  type: Type.STRING,
+                  description: "One-sentence explanation of why the brand fits."
+                },
+                decisionMakerTitle: {
+                  type: Type.STRING,
+                  description: "Likely sponsorship, partnerships, community relations, or marketing decision-maker title."
+                },
+                tier: {
+                  type: Type.STRING,
+                  description: 'Must be exactly "Tier 1" or "Tier 2".'
                 },
                 fitFactors: {
                   type: Type.ARRAY,
-                  items: { type: Type.STRING }
+                  items: { type: Type.STRING },
+                  description: "Specific reasons the brand fits the property."
                 },
-                website: { type: Type.STRING },
-                contactLead: { type: Type.STRING },
-                contactClue: { type: Type.STRING },
-                email: { type: Type.STRING },
-                phone: { type: Type.STRING },
-                source: { type: Type.STRING }
+                website: {
+                  type: Type.STRING,
+                  description: 'Official company website URL if known, otherwise "N/A".'
+                },
+                contactLead: {
+                  type: Type.STRING,
+                  description: 'Real name and title if verifiable, otherwise executive-style fallback such as "Partnerships Team".'
+                },
+                contactClue: {
+                  type: Type.STRING,
+                  description: 'Short explanation of how the contact path was identified, otherwise "N/A".'
+                },
+                email: {
+                  type: Type.STRING,
+                  description: 'Public verified email only, otherwise "N/A".'
+                },
+                phone: {
+                  type: Type.STRING,
+                  description: 'Company main line or office number only, otherwise "N/A".'
+                },
+                linkedinUrl: {
+                  type: Type.STRING,
+                  description: 'Real LinkedIn profile or company page URL if verifiable, otherwise "N/A".'
+                },
+                source: {
+                  type: Type.STRING,
+                  description: 'Real source references such as company website, press release, article, LinkedIn, Apollo, or other public business resources, otherwise "N/A".'
+                }
               },
-              required: ["brandName", "industryCategory", "rationale", "decisionMakerTitle", "tier", "fitFactors", "website", "contactLead", "contactClue", "email", "phone", "source"]
+              required: [
+                "brandName",
+                "industryCategory",
+                "rationale",
+                "decisionMakerTitle",
+                "tier",
+                "fitFactors",
+                "website",
+                "contactLead",
+                "contactClue",
+                "email",
+                "phone",
+                "linkedinUrl",
+                "source"
+              ]
             }
           }
         },
@@ -100,6 +208,6 @@ export async function generateSponsorshipStrategy(request: TargetingRequest): Pr
     }
   });
 
-  const result = JSON.parse(response.text || '{}');
+  const result = JSON.parse(response.text || "{}");
   return result as TargetingResult;
 }
