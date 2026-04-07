@@ -15,6 +15,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TargetingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
+const [showBrief, setShowBrief] = useState(false);
 
   const handleInputChange = (field: keyof TargetingRequest, value: string) => {
     setRequest(prev => ({ ...prev, [field]: value }));
@@ -171,11 +173,21 @@ const App: React.FC = () => {
                     </span>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {tier2Sponsors.map((sponsor, idx) => (
-                      <SponsorCard key={idx} sponsor={sponsor} />
-                    ))}
-                  </div>
-                </section>
+                  {tier2Sponsors.map((sponsor, idx) => (
+  <div key={idx}>
+    <SponsorCard sponsor={sponsor} />
+
+    <button
+      onClick={() => {
+        setSelectedSponsor(sponsor);
+        setShowBrief(true);
+      }}
+      className="mt-2 px-3 py-2 text-sm bg-blue-600 text-white rounded-lg"
+    >
+      Create Brief
+    </button>
+  </div>
+))}
                 
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-sm text-blue-800">
                   <h4 className="font-bold flex items-center gap-2 mb-2">
@@ -190,6 +202,30 @@ const App: React.FC = () => {
             )}
           </div>
         </div>
+        {/* ===== BRIEF SECTION ===== */}
+{showBrief && selectedSponsor && (
+  <div className="mt-10 bg-white border rounded-xl p-6 shadow-lg">
+    <h2 className="text-xl font-bold mb-4">Brief Builder</h2>
+
+    <p><strong>Company:</strong> {selectedSponsor.name}</p>
+    <p><strong>Category:</strong> {selectedSponsor.category}</p>
+
+    <div className="mt-4">
+      <button className="px-4 py-2 bg-slate-900 text-white rounded-lg">
+        Generate AI Brief
+      </button>
+
+      <button
+        onClick={() => setShowBrief(false)}
+        className="ml-3 px-4 py-2 bg-gray-200 rounded-lg"
+      >
+        Close
+      </button>
+    </div>
+  </div>
+)}
+
+</main>
       </main>
 
       {/* Footer */}
