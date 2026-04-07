@@ -15,8 +15,6 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<TargetingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null);
-  const [showBrief, setShowBrief] = useState(false);
 
   const handleInputChange = (field: keyof TargetingRequest, value: string) => {
     setRequest(prev => ({ ...prev, [field]: value }));
@@ -29,14 +27,27 @@ const App: React.FC = () => {
     try {
       const data = await generateSponsorshipStrategy(request);
       setResult(data);
-      setShowBrief(false);
-      setSelectedSponsor(null);
     } catch (err) {
       console.error('Analysis Error:', err);
       setError('An error occurred while generating the sponsorship strategy. Please try again.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const sendToBrief = (sponsor: Sponsor) => {
+    const briefBaseUrl = 'https://light-brief-app.vercel.app';
+
+    const params = new URLSearchParams({
+      company: sponsor.brandName || '',
+      category: sponsor.industryCategory || '',
+      contactName: sponsor.contactLead || '',
+      email: sponsor.email || '',
+      directPhone: (sponsor as any).directPhone || sponsor.phone || '',
+      rationale: sponsor.rationale || ''
+    });
+
+    window.open(`${briefBaseUrl}?${params.toString()}`, '_blank');
   };
 
   const tier1Sponsors =
@@ -47,7 +58,6 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -77,7 +87,6 @@ const App: React.FC = () => {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Sidebar */}
           <aside className="lg:col-span-4">
             <InputSection
               request={request}
@@ -87,7 +96,6 @@ const App: React.FC = () => {
             />
           </aside>
 
-          {/* Results */}
           <div className="lg:col-span-8 space-y-8">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-center gap-3">
@@ -138,7 +146,6 @@ const App: React.FC = () => {
 
             {result && !loading && (
               <div className="space-y-10">
-                {/* Strategy Header */}
                 <div className="bg-slate-900 rounded-2xl p-8 text-white shadow-xl">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                     <div>
@@ -164,7 +171,6 @@ const App: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Tier 1 */}
                 <section>
                   <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -184,16 +190,12 @@ const App: React.FC = () => {
                       <SponsorCard
                         key={idx}
                         sponsor={sponsor}
-                        onSendToBrief={(sponsor) => {
-                          setSelectedSponsor(sponsor);
-                          setShowBrief(true);
-                        }}
+                        onSendToBrief={sendToBrief}
                       />
                     ))}
                   </div>
                 </section>
 
-                {/* Tier 2 */}
                 <section>
                   <div className="flex items-center justify-between mb-4 border-b border-slate-200 pb-2">
                     <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
@@ -213,43 +215,12 @@ const App: React.FC = () => {
                       <SponsorCard
                         key={idx}
                         sponsor={sponsor}
-                        onSendToBrief={(sponsor) => {
-                          setSelectedSponsor(sponsor);
-                          setShowBrief(true);
-                        }}
+                        onSendToBrief={sendToBrief}
                       />
                     ))}
                   </div>
                 </section>
 
-                {/* Brief Section */}
-                {showBrief && selectedSponsor && (
-                  <div className="mt-10 bg-white border rounded-xl p-6 shadow-lg">
-                    <h2 className="text-xl font-bold mb-4">Brief Builder</h2>
-
-                    <p>
-                      <strong>Company:</strong> {selectedSponsor.brandName}
-                    </p>
-                    <p>
-                      <strong>Category:</strong> {selectedSponsor.industryCategory}
-                    </p>
-
-                    <div className="mt-4 flex gap-3">
-                      <button className="px-4 py-2 bg-slate-900 text-white rounded-lg">
-                        Generate AI Brief
-                      </button>
-
-                      <button
-                        onClick={() => setShowBrief(false)}
-                        className="px-4 py-2 bg-gray-200 rounded-lg"
-                      >
-                        Close
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Methodology */}
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-6 text-sm text-blue-800">
                   <h4 className="font-bold flex items-center gap-2 mb-2">
                     <i className="fa-solid fa-circle-info"></i>
@@ -265,7 +236,6 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="mt-20 border-t border-slate-200 bg-white py-10">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <p className="text-slate-400 text-xs font-semibold uppercase tracking-widest mb-2">
