@@ -1,192 +1,334 @@
-import React, { useState } from 'react';
-import { Sponsor, Tier } from '../types';
-import { motion, AnimatePresence } from 'motion/react';
-import {
-  Tag,
-  Globe,
-  User,
-  Mail,
-  Phone,
-  Link as LinkIcon,
-  Check,
-  Eye,
-  EyeOff,
-  FilePlus,
-  Info
-} from 'lucide-react';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Alto Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-interface SponsorCardProps {
-  sponsor: Sponsor;
-  onSendToBrief: (sponsor: Sponsor) => void;
-}
+  <style>
+    * { box-sizing: border-box; }
 
-const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onSendToBrief }) => {
-  const [showContact, setShowContact] = useState(false);
-  const isTier1 =
-    sponsor.tier === Tier.TIER_1 || sponsor.tier.toString().toLowerCase().includes('1');
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(255, 122, 0, 0.10), transparent 28%),
+        radial-gradient(circle at top right, rgba(194, 24, 91, 0.12), transparent 30%),
+        linear-gradient(180deg, #08090c 0%, #101116 100%);
+      color: white;
+      min-height: 100vh;
+    }
 
-  return (
-    <div
-      className={`bg-white rounded-xl shadow-sm border p-6 transition-all hover:shadow-md flex flex-col h-full ${
-        isTier1
-          ? 'border-blue-100 border-l-4 border-l-blue-600'
-          : 'border-slate-200 border-l-4 border-l-slate-400'
-      }`}
-    >
-      <div className="flex flex-col sm:flex-row justify-between items-start gap-4 mb-4">
-        <div className="flex-1 min-w-0">
-          <span
-            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full mb-2 inline-block ${
-              isTier1 ? 'bg-blue-50 text-blue-700' : 'bg-slate-50 text-slate-600'
-            }`}
-          >
-            {isTier1 ? 'Strategic Fit' : 'Opportunistic Fit'}
-          </span>
+    a { text-decoration: none; color: inherit; }
 
-          <h3 className="text-xl font-bold text-slate-900 break-words">
-            {sponsor.brandName}
-          </h3>
+    .wrapper {
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 36px 28px 60px;
+    }
 
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
-            <p className="text-xs font-medium text-blue-600 flex items-center gap-1">
-              <Tag size={10} />
-              {sponsor.industryCategory}
-            </p>
+    .hero {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03));
+      border: 1px solid rgba(255,255,255,0.10);
+      border-radius: 30px;
+      padding: 34px 32px 28px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+      backdrop-filter: blur(10px);
+      margin-bottom: 28px;
+    }
 
-            <a
-              href={sponsor.website.startsWith('http') ? sponsor.website : `https://${sponsor.website}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-xs text-slate-400 hover:text-blue-600 flex items-center gap-1 transition-colors break-all"
-            >
-              <Globe size={10} />
-              {sponsor.website}
-            </a>
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -80px;
+      top: -80px;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(244,180,0,0.30), transparent 65%);
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #f6c251;
+      background: rgba(244, 180, 0, 0.10);
+      border: 1px solid rgba(244, 180, 0, 0.20);
+      padding: 10px 14px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 18px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 52px;
+      letter-spacing: -0.03em;
+    }
+
+    .subtext {
+      margin-top: 14px;
+      color: rgba(255,255,255,0.72);
+      font-size: 18px;
+      max-width: 760px;
+    }
+
+    .hero-bottom {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 28px;
+      flex-wrap: wrap;
+    }
+
+    .mini-stats { display: flex; gap: 14px; }
+
+    .stat {
+      background: rgba(0,0,0,0.28);
+      border-radius: 20px;
+      padding: 16px 18px;
+      min-width: 140px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.48);
+      text-transform: uppercase;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: 700;
+    }
+
+    .section-bar {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 18px;
+    }
+
+    .section-title {
+      font-size: 28px;
+      font-weight: 700;
+    }
+
+    .section-pill {
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.06);
+      font-size: 14px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+
+    .card-shell {
+      border-radius: 28px;
+      padding: 1px;
+      transition: 0.25s;
+    }
+
+    .card-shell:hover {
+      transform: translateY(-6px);
+    }
+
+    .card-inner {
+      border-radius: 28px;
+      background: rgba(18, 19, 24, 0.94);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 220px;
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .icon-box {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.10);
+    }
+
+    .status {
+      font-size: 11px;
+      text-transform: uppercase;
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+    }
+
+    .card-title {
+      font-size: 26px;
+      font-weight: 700;
+      margin-top: 18px;
+    }
+
+    .card-desc {
+      font-size: 15px;
+      color: rgba(255,255,255,0.68);
+    }
+
+    .card-action {
+      margin-top: 20px;
+      text-align: center;
+      padding: 14px;
+      border-radius: 18px;
+      font-weight: 700;
+    }
+
+    .orange-shell { background: linear-gradient(135deg, orange, gold); }
+    .gold-shell { background: linear-gradient(135deg, gold, yellow); }
+    .rose-shell { background: linear-gradient(135deg, crimson, pink); }
+    .gray-shell { background: linear-gradient(135deg, gray, lightgray); }
+
+    .orange-btn { background: orange; color: black; }
+    .gold-btn { background: gold; color: black; }
+    .rose-btn { background: crimson; }
+    .gray-btn { background: gray; }
+
+    .footer-note {
+      margin-top: 24px;
+      padding: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <section class="hero">
+      <div class="eyebrow">Alto AI Workspace</div>
+      <h1>Alto Dashboard</h1>
+
+      <div class="subtext">
+        Your central hub for AI tools, brand systems, visual assets, and buildouts.
+      </div>
+
+      <div class="hero-bottom">
+        <div class="mini-stats">
+          <div class="stat">
+            <div class="stat-label">Projects</div>
+            <div class="stat-value">4</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-label">Status</div>
+            <div class="stat-value">Live</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-label">Focus</div>
+            <div class="stat-value">Build</div>
           </div>
         </div>
-
-        <div className="sm:text-right sm:max-w-[40%] shrink-0">
-          <p className="text-[10px] text-slate-400 font-semibold uppercase">
-            Decision Maker
-          </p>
-          <p className="text-[13px] font-semibold text-slate-700 leading-tight break-words">
-            {sponsor.decisionMakerTitle}
-          </p>
-        </div>
       </div>
+    </section>
 
-      <div className="bg-slate-50 rounded-lg p-4 mb-4 border border-slate-100 flex-grow">
-        <p className="text-[10px] text-slate-400 font-semibold uppercase mb-1">
-          Why it fits
-        </p>
-        <p className="text-slate-700 text-sm italic leading-relaxed">
-          &ldquo;{sponsor.rationale}&rdquo;
-        </p>
-      </div>
-
-      <div className="mb-6">
-        <p className="text-[10px] text-slate-400 font-semibold uppercase mb-2">
-          Key Fit Factors
-        </p>
-
-        <div className="flex flex-wrap gap-2">
-          {sponsor.fitFactors.map((factor, idx) => (
-            <span
-              key={idx}
-              className="bg-white border border-slate-200 text-slate-600 px-2 py-1 rounded text-[11px] font-medium flex items-center gap-1"
-            >
-              <Check size={10} className="text-green-500" />
-              {factor}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {showContact && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
-            className="overflow-hidden"
-          >
-            <div className="mb-6 p-4 bg-blue-50/50 rounded-xl border border-blue-100">
-              <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <User size={10} />
-                    Contact Lead
-                  </p>
-                  <p className="text-sm font-bold text-slate-800">
-                    {sponsor.contactLead}
-                  </p>
-                  <p className="text-xs text-slate-500 italic mt-0.5 flex items-center gap-1">
-                    <Info size={10} />
-                    {sponsor.contactClue}
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                      <Mail size={10} />
-                      Email
-                    </p>
-                    <p className="text-xs font-medium text-slate-700 break-all">
-                      {sponsor.email}
-                    </p>
-                  </div>
-
-                  <div>
-                    <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                      <Phone size={10} />
-                      Phone
-                    </p>
-                    <p className="text-xs font-medium text-slate-700">
-                      {sponsor.phone}
-                    </p>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[10px] text-blue-400 font-bold uppercase tracking-wider mb-1 flex items-center gap-1">
-                    <LinkIcon size={10} />
-                    Source
-                  </p>
-                  <p className="text-[11px] text-slate-500">
-                    {sponsor.source}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="grid grid-cols-2 gap-3 mt-auto pt-4 border-t border-slate-100">
-        <button
-          onClick={() => setShowContact(!showContact)}
-          className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg text-xs font-bold transition-all ${
-            showContact
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-          }`}
-        >
-          {showContact ? <EyeOff size={14} /> : <Eye size={14} />}
-          {showContact ? 'Hide Details' : 'View Contact Details'}
-        </button>
-
-        <button
-          onClick={() => onSendToBrief(sponsor)}
-          className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all"
-        >
-          <FilePlus size={14} />
-          Send to Brief
-        </button>
-      </div>
+    <div class="section-bar">
+      <div class="section-title">Workspace</div>
+      <div class="section-pill">Connected tools</div>
     </div>
-  );
-};
 
-export default SponsorCard;
+    <div class="grid">
+
+      <!-- TARGETER (UPDATED) -->
+      <a href="https://targeter-app.vercel.app" target="_blank" class="card-shell orange-shell">
+        <div class="card-inner">
+          <div>
+            <div class="card-top">
+              <div class="icon-box">🎯</div>
+              <div class="status">Live Tool</div>
+            </div>
+
+            <div class="card-title">Targeter</div>
+            <div class="card-desc">
+              Find strong brand matches, partnership targets, and aligned opportunities.
+            </div>
+          </div>
+
+          <div class="card-action orange-btn">Open Tool</div>
+        </div>
+      </a>
+
+      <!-- BRIEFS -->
+      <div class="card-shell gold-shell">
+        <div class="card-inner">
+          <div>
+            <div class="card-top">
+              <div class="icon-box">📋</div>
+              <div class="status">Coming Soon</div>
+            </div>
+
+            <div class="card-title">Briefs</div>
+            <div class="card-desc">
+              Build cleaner strategy briefs and planning docs.
+            </div>
+          </div>
+
+          <div class="card-action gold-btn">Open Tool</div>
+        </div>
+      </div>
+
+      <!-- BRAND -->
+      <div class="card-shell rose-shell">
+        <div class="card-inner">
+          <div>
+            <div class="card-top">
+              <div class="icon-box">🖼️</div>
+              <div class="status">Library</div>
+            </div>
+
+            <div class="card-title">Brand Assets</div>
+            <div class="card-desc">
+              Keep logos and creative materials together.
+            </div>
+          </div>
+
+          <div class="card-action rose-btn">Open Library</div>
+        </div>
+      </div>
+
+      <!-- V STUDIO -->
+      <a href="https://altov-v-studio-1086023065223.europe-west1.run.app/" target="_blank" class="card-shell gray-shell">
+        <div class="card-inner">
+          <div>
+            <div class="card-top">
+              <div class="icon-box">🎬</div>
+              <div class="status">Live Tool</div>
+            </div>
+
+            <div class="card-title">V Studio</div>
+            <div class="card-desc">
+              Create and generate visual concepts.
+            </div>
+          </div>
+
+          <div class="card-action gray-btn">Open Studio</div>
+        </div>
+      </a>
+
+    </div>
+
+    <div class="footer-note">
+      This is your control center for all tools.
+    </div>
+
+  </div>
+</body>
+</html>
