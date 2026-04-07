@@ -34,30 +34,35 @@ STRICT CONTACT AND SOURCE RULES:
   - invented emails
   - invented people
   - invented LinkedIn URLs
-- If a direct person cannot be confidently identified, use an executive-style fallback such as:
-  - "Partnerships Team"
-  - "Corporate Communications"
-  - "Community Relations"
-  - "Marketing Leadership"
-- If a direct person cannot be found, the decision-maker title should still be realistic, such as:
-  - "Director of Partnerships"
-  - "VP of Marketing"
-  - "Director of Community Relations"
-  - "Corporate Sponsorship Lead"
 - Phone must be a COMPANY MAIN LINE or OFFICE NUMBER only, never a guessed direct number.
 - Email must only be returned if publicly listed and verifiable.
-- LinkedIn must be a real LinkedIn URL if available. Prefer the person’s LinkedIn profile. If not available, provide the company LinkedIn page. If neither can be verified, return "N/A".
 - Source must describe the real source or sources used, such as:
   - "Company website - About page"
   - "Company website - Contact page"
   - "Press release"
   - "News article"
-  - "LinkedIn - Company page"
   - "LinkedIn - Executive profile"
+  - "LinkedIn - Company page"
   - "Community impact report"
   - "Investor relations page"
   - "Apollo"
 - If multiple sources support the entry, combine them in one concise source string separated by " / ".
+
+CONTACT LEAD REQUIREMENTS:
+- Prefer a real person's full name and title whenever verifiable.
+- If a real person can be identified, include both:
+  - full name
+  - exact or best-supported title
+- If multiple possible people exist, choose the one most likely to oversee sponsorships, partnerships, community relations, or brand marketing, and explain the reasoning briefly in contactClue.
+- Only use team/function placeholders such as "Marketing Leadership Team", "Partnerships Team", or "Community Relations Team" if a real person cannot be confidently identified.
+- Never invent a person's name.
+
+LINKEDIN RULES:
+- Strongly prefer a REAL PERSON’S LinkedIn profile URL.
+- If a specific person is identified, DO NOT provide a company LinkedIn page. Only provide the person's LinkedIn URL.
+- If the person's LinkedIn cannot be confidently verified, return "N/A".
+- Only provide a company LinkedIn page if NO specific person can be identified at all.
+- Never fabricate LinkedIn URLs.
 
 Each sponsor entry must include:
 - Brand Name
@@ -83,10 +88,10 @@ FIELD RULES:
 - fitFactors: concise list of actual fit reasons
 - website: official company website URL if known, otherwise "N/A"
 - contactLead: real name and title if verifiable; otherwise an executive-style team or function such as "Partnerships Team"
-- contactClue: brief explanation of how this contact path was identified, or "N/A"
+- contactClue: brief explanation of how the contact path was identified, or "N/A"
 - email: public verified email only, otherwise "N/A"
 - phone: company main line or office number only, otherwise "N/A"
-- linkedinUrl: real LinkedIn profile or company page URL if verifiable, otherwise "N/A"
+- linkedinUrl: real person's LinkedIn profile URL if verifiable; if no person can be identified at all, a company LinkedIn page may be used; otherwise "N/A"
 - source: concise list of real sources used, otherwise "N/A"`;
 
 export async function generateSponsorshipStrategy(request: TargetingRequest): Promise<TargetingResult> {
@@ -109,7 +114,9 @@ Important:
 - No invented contact data.
 - Return "N/A" for any unverifiable detail.
 - Include LinkedIn and source data wherever possible.
-- Phone must be a company main line or office number only.`
+- Phone must be a company main line or office number only.
+- Prefer a real person's name, title, and LinkedIn profile when verifiable.
+- Do not substitute a company LinkedIn page when a specific person is identified but their LinkedIn cannot be verified. In that case, return "N/A" for linkedinUrl.`
       }
     ],
     config: {
@@ -178,7 +185,7 @@ Important:
                 },
                 linkedinUrl: {
                   type: Type.STRING,
-                  description: 'Real LinkedIn profile or company page URL if verifiable, otherwise "N/A".'
+                  description: 'Prefer a real person LinkedIn profile URL. Only allow a company LinkedIn page if no specific person can be identified at all. Otherwise "N/A".'
                 },
                 source: {
                   type: Type.STRING,
