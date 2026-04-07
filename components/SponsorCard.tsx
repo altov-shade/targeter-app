@@ -20,10 +20,45 @@ interface SponsorCardProps {
   onSendToBrief: (sponsor: Sponsor) => void;
 }
 
+const PAVILION_BRIEF_URL = 'https://pavilion-brief-app.vercel.app/';
+
 const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onSendToBrief }) => {
   const [showContact, setShowContact] = useState(false);
+
   const isTier1 =
     sponsor.tier === Tier.TIER_1 || sponsor.tier.toString().toLowerCase().includes('1');
+
+  const handleSendToBrief = () => {
+    const params = new URLSearchParams();
+
+    params.set('property', 'Pavilion');
+    params.set('brand', sponsor.brandName || '');
+    params.set('industry', sponsor.industryCategory || '');
+    params.set('audience', '');
+    params.set('goal', sponsor.decisionMakerTitle || '');
+    params.set('fit', sponsor.rationale || '');
+
+    const notes = [
+      sponsor.contactLead ? `Contact Lead: ${sponsor.contactLead}` : '',
+      sponsor.contactClue ? `Contact Clue: ${sponsor.contactClue}` : '',
+      sponsor.email ? `Email: ${sponsor.email}` : '',
+      ((sponsor as any).directPhone || sponsor.phone)
+        ? `Phone: ${(sponsor as any).directPhone || sponsor.phone}`
+        : '',
+      sponsor.website ? `Website: ${sponsor.website}` : '',
+      sponsor.source ? `Source: ${sponsor.source}` : '',
+      sponsor.fitFactors?.length ? `Key Fit Factors: ${sponsor.fitFactors.join(', ')}` : ''
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    params.set('notes', notes);
+
+    const finalUrl = `${PAVILION_BRIEF_URL}?${params.toString()}`;
+
+    onSendToBrief(sponsor);
+    window.open(finalUrl, '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <div
@@ -178,7 +213,7 @@ const SponsorCard: React.FC<SponsorCardProps> = ({ sponsor, onSendToBrief }) => 
         </button>
 
         <button
-          onClick={() => onSendToBrief(sponsor)}
+          onClick={handleSendToBrief}
           className="flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all"
         >
           <FilePlus size={14} />
