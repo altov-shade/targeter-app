@@ -35,19 +35,8 @@ const App: React.FC = () => {
     }
   };
 
-  const sendToBrief = (sponsor: Sponsor) => {
-    const briefBaseUrl = 'https://light-brief-app.vercel.app';
-
-    const params = new URLSearchParams({
-      company: sponsor.brandName || '',
-      category: sponsor.industryCategory || '',
-      contactName: sponsor.contactLead || '',
-      email: sponsor.email || '',
-      directPhone: (sponsor as any).directPhone || sponsor.phone || '',
-      rationale: sponsor.rationale || ''
-    });
-
-    window.open(`${briefBaseUrl}?${params.toString()}`, '_blank');
+  const sendToBrief = (_sponsor: Sponsor) => {
+    console.log('Opening Pavilion Brief from SponsorCard');
   };
 
   const tier1Sponsors =
